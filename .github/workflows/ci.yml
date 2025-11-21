@@ -19,3 +19,9 @@ jobs:
 
       - name: Run Program
         run: ./app
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app
+          path: app
