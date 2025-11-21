@@ -1,4 +1,4 @@
-name: C++ CI Pipeline
+name: C++ CI Pipeline (CentOS 7 Compatible)
 
 on:
   push:
@@ -10,18 +10,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: centos:7
+
     steps:
-      - name: Checkout
+      - name: Install Tools (GCC, CMake, Make)
+        run: |
+          yum -y update
+          yum -y install centos-release-scl
+          yum -y install devtoolset-11 gcc gcc-c++ make
+
+      - name: Enable GCC Toolset
+        run: echo "source /opt/rh/devtoolset-11/enable" >> ~/.bashrc
+
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Compile C++ Program
-        run: g++ -std=c++17 src/main.cpp -o app
-
-      - name: Run Program
-        run: ./app
+      - name: Build Program
+        run: |
+          source /opt/rh/devtoolset-11/enable
+          mkdir -p out
+          cd out
+          g++ -std=c++17 ../src/main.cpp -o app -static-libstdc++ -static-libgcc
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: my-app
-          path: app
+          path: out/app
+
+ 
