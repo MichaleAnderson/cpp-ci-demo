@@ -1,37 +1,18 @@
-name: C++ CI Pipeline
-
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
 jobs:
   build:
-    runs-on: ubuntu-latest   # run actions normally
+    runs-on: ubuntu-latest
+
+    container:
+      image: rockylinux:9
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build inside CentOS 7 Docker container
+      - name: Install build tools
         run: |
-          docker run --rm -v $PWD:/workspace -w /workspace centos:7 bash -c "
-            sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-*.repo
-            sed -i 's|#baseurl=http://mirror.centos.org/centos/|baseurl=http://vault.centos.org/centos/|g' /etc/yum.repos.d/CentOS-*.repo
-            yum clean all
-            yum -y update
-            yum -y install centos-release-scl
-            yum -y install devtoolset-11 devtoolset-11-gcc devtoolset-11-gcc-c++ make
-            source /opt/rh/devtoolset-11/enable
-            mkdir -p out
-            cd out
-            g++ -std=c++17 ../src/main.cpp -o app -static-libstdc++ -static-libgcc
-          "
+          dnf install -y gcc gcc-c++ make cmake git
 
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-app
-          path: out/app
+      - name: Build
+        run: |
+          g++ --version
+          g++ -std=c++17 main.cpp -o myapp
