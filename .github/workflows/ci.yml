@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Compile C++ Program
-      run: g++ -std=c++17 src/main.cpp -o app
+      - name: Compile C++ Program
+        run: g++ -std=c++17 src/main.cpp -o app
 
-    - name: Run Program
-      run: ./app
+      - name: Run Program
+        run: ./app
