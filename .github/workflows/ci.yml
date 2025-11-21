@@ -21,11 +21,14 @@ jobs:
             sed -i 's|#baseurl=http://mirror.centos.org/centos/|baseurl=http://vault.centos.org/centos/|g' /etc/yum.repos.d/CentOS-*.repo
             yum clean all
             yum -y update
-            yum -y install gcc gcc-c++ make
+            yum -y install centos-release-scl
+            yum -y install devtoolset-11 devtoolset-11-gcc devtoolset-11-gcc-c++ make
+            source /opt/rh/devtoolset-11/enable
             mkdir -p out
             cd out
             g++ -std=c++17 ../src/main.cpp -o app -static-libstdc++ -static-libgcc
           "
+
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
