@@ -1,4 +1,4 @@
-name: C++ CI Pipeline (CentOS 7 Compatible)
+name: C++ CI Pipeline
 
 on:
   push:
@@ -8,37 +8,26 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    container:
-      image: centos:7
+    runs-on: ubuntu-latest   # run actions normally
 
     steps:
-      - name: Fix CentOS 7 Base Repositories (Vault)
-        run: |
-          sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-*.repo
-          sed -i 's|#baseurl=http://mirror.centos.org/centos/|baseurl=http://vault.centos.org/centos/|g' /etc/yum.repos.d/CentOS-*.repo
-
-      - name: Disable SCL repos (not present in minimal container)
-        run: |
-          yum-config-manager --disable centos-sclo-rh centos-sclo-sclo || true
-
-      - name: Install Developer Tools
-        run: |
-          yum clean all
-          yum -y update
-          yum -y install gcc gcc-c++ make
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Program
+      - name: Build inside CentOS 7 Docker container
         run: |
-          mkdir -p out
-          cd out
-          g++ -std=c++17 ../src/main.cpp -o app -static-libstdc++ -static-libgcc
+          docker run --rm -v $PWD:/workspace -w /workspace centos:7 bash -c "
+            sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-*.repo
+            sed -i 's|#baseurl=http://mirror.centos.org/centos/|baseurl=http://vault.centos.org/centos/|g' /etc/yum.repos.d/CentOS-*.repo
+            yum clean all
+            yum -y update
+            yum -y install gcc gcc-c++ make
+            mkdir -p out
+            cd out
+            g++ -std=c++17 ../src/main.cpp -o app -static-libstdc++ -static-libgcc
+          "
 
-      - name: Upload Build Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: my-app
