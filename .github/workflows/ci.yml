@@ -1,18 +1,32 @@
-jobs:
-  build:
-    runs-on: ubuntu-latest
+name: C++ Windows Build
 
-    container:
-      image: rockylinux:9
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Install build tools
-        run: |
-          dnf install -y gcc gcc-c++ make cmake git
+      - name: Install MinGW (G++ for Windows)
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
-      - name: Build
-        run: |
-          g++ --version
-          g++ -std=c++17 main.cpp -o myapp
+      - name: Compile C++ Program (.exe)
+        run: g++ -std=c++17 src/main.cpp -o app.exe
+
+      - name: Run Program
+        run: ./app.exe
+
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          path: app.exe
